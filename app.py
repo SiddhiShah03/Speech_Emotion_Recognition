@@ -6,8 +6,8 @@ from tensorflow.keras.models import load_model
 import os
 
 # Load models and encoders
-emotion_model = load_model("emotion_model.pkl")
-gender_model = load_model("gender_model.pkl")
+emotion_model = joblib.load("emotion_model.pkl")
+gender_model = joblib.load("gender_model.pkl")
 le_emotion = joblib.load("le_emotion.pkl")
 le_gender = joblib.load("le_gender.pkl")
 
