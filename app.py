@@ -9,18 +9,34 @@ from PIL import Image
 # Enable wide layout
 st.set_page_config(layout="wide")
 
-# Inject CSS to stretch content
+# Custom CSS for image + layout
 st.markdown("""
     <style>
     .reportview-container .main .block-container {
         padding-top: 0rem;
-        padding-right: 1rem;
-        padding-left: 1rem;
+        padding-right: 2rem;
+        padding-left: 2rem;
         padding-bottom: 0rem;
         max-width: 100%;
     }
-    .stImage > img {
-        width: 100% !important;
+    img.banner {
+        border-radius: 10px;
+        width: 100%;
+        max-width: 600px;
+    }
+    .title-box {
+        padding-left: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .title-box h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.3rem;
+    }
+    .title-box p {
+        font-size: 1.1rem;
+        color: #555;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -50,11 +66,19 @@ def extract_features(file_path, max_pad_len=174):
 # Streamlit UI
 #st.title("🎙️ Speech Emotion & Gender Recognition")
 #st.markdown("Upload an audio file (.wav or .mp3) and the model will predict the speaker's **emotion** and **gender**.")
-col1, col2, col3 = st.columns([1, 2, 1])  # Makes the center column wider
-with col2:
-    st.markdown("<h1 style='text-align: center;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
+# Layout container with image and title
+col1, col2 = st.columns([1.2, 2])  # Image on the left, title on the right
 
+with col1:
+    st.image("image.png", caption=None, use_column_width=True, output_format="auto", channels="RGB")
+
+with col2:
+    st.markdown("""
+    <div class="title-box">
+        <h1>🎙️ Speech Emotion & Gender Recognition</h1>
+        <p>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>
+    </div>
+    """, unsafe_allow_html=True)
 uploaded_file = st.file_uploader("Upload Audio File", type=["wav", "mp3"])
 
 if uploaded_file is not None:
