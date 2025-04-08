@@ -35,10 +35,8 @@ def extract_features(file_path, max_pad_len=174):
 #st.title("🎙️ Speech Emotion & Gender Recognition")
 #st.markdown("Upload an audio file (.wav or .mp3) and the model will predict the speaker's **emotion** and **gender**.")
 # Layout container with image and title
-col1, col2, col3 = st.columns([1, 2, 1])  # Image on the left, title on the right
-with col2:
-    st.markdown("<h1 style='text-align: center;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader("Upload Audio File", type=["wav", "mp3"])
 
