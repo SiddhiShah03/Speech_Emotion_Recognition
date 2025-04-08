@@ -8,7 +8,7 @@ from PIL import Image
 
 # Show banner at the top
 banner_image = Image.open("banner.png")  # Replace with your saved file name
-st.image(banner_image, use_column_width=True)
+st.image(banner_image, use_container_width=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 # Load models and encoders
