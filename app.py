@@ -6,8 +6,11 @@ from tensorflow.keras.models import load_model
 import os
 from PIL import Image 
 
+# Enable wide layout
+st.set_page_config(layout="wide")
+
 # Show banner at the top
-banner_image = Image.open("banner.png")  # Replace with your saved file name
+banner_image = Image.open("banner.png")  
 st.image(banner_image, use_container_width=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -31,8 +34,10 @@ def extract_features(file_path, max_pad_len=174):
 # Streamlit UI
 #st.title("🎙️ Speech Emotion & Gender Recognition")
 #st.markdown("Upload an audio file (.wav or .mp3) and the model will predict the speaker's **emotion** and **gender**.")
-st.markdown("<h1 style='text-align: center;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1, 2, 1])  # Makes the center column wider
+with col2:
+    st.markdown("<h1 style='text-align: center;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader("Upload Audio File", type=["wav", "mp3"])
 
