@@ -7,7 +7,7 @@ import os
 from PIL import Image 
 
 # Enable wide layout
-st.set_page_config(layout="wide")
+#st.set_page_config(layout="wide")
 
 # Show banner at the top
 banner_image = Image.open("banner.png")  
