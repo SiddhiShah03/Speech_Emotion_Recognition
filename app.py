@@ -70,7 +70,7 @@ def extract_features(file_path, max_pad_len=174):
 col1, col2 = st.columns([1.2, 2])  # Image on the left, title on the right
 
 with col1:
-    st.image("image.png", caption=None, use_column_width=True, output_format="auto", channels="RGB")
+    st.image("image.png", caption=None, use_container_width=True, output_format="auto", channels="RGB")
 
 with col2:
     st.markdown("""
