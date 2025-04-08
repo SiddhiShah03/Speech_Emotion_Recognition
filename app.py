@@ -52,12 +52,22 @@ if uploaded_file is not None:
             st.error("⚠️ Error during prediction: " + str(e))
 
 
-# Inject custom CSS for background
+import base64
+
+# Convert local image to Base64 string
+def get_base64(file_path):
+    with open(file_path, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+img_base64 = get_base64("emoji.png")
+
+# Inject CSS with background image
 st.markdown(
     f"""
     <style>
     .stApp {{
-        background-image: url("emoji.png");
+        background-image: url("data:image/png;base64,{img_base64}");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -70,11 +80,10 @@ st.markdown(
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(255, 255, 255, 0.7); /* adjust transparency */
+        background-color: rgba(255, 255, 255, 0.7);  /* adjust for transparency */
         z-index: -1;
     }}
     </style>
     """,
     unsafe_allow_html=True
 )
-
