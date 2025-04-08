@@ -10,8 +10,6 @@ from PIL import Image
 banner_image = Image.open("banner.png")  # Replace with your saved file name
 st.image(banner_image, use_column_width=True)
 st.markdown("<br>", unsafe_allow_html=True)
-st.markdown("<h1 style='text-align: center;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
 
 # Load models and encoders
 emotion_model = load_model("emotion_model.h5")
@@ -31,8 +29,10 @@ def extract_features(file_path, max_pad_len=174):
     return mfccs
 
 # Streamlit UI
-st.title("🎙️ Speech Emotion & Gender Recognition")
-st.markdown("Upload an audio file (.wav or .mp3) and the model will predict the speaker's **emotion** and **gender**.")
+#st.title("🎙️ Speech Emotion & Gender Recognition")
+#st.markdown("Upload an audio file (.wav or .mp3) and the model will predict the speaker's **emotion** and **gender**.")
+st.markdown("<h1 style='text-align: center;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader("Upload Audio File", type=["wav", "mp3"])
 
