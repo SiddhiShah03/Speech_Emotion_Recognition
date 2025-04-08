@@ -9,6 +9,22 @@ from PIL import Image
 # Enable wide layout
 st.set_page_config(layout="wide")
 
+# Inject CSS to stretch content
+st.markdown("""
+    <style>
+    .reportview-container .main .block-container {
+        padding-top: 0rem;
+        padding-right: 1rem;
+        padding-left: 1rem;
+        padding-bottom: 0rem;
+        max-width: 100%;
+    }
+    .stImage > img {
+        width: 100% !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 # Show banner at the top
 banner_image = Image.open("banner.png")  
 st.image(banner_image, use_container_width=True)
