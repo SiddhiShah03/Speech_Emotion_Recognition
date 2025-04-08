@@ -4,6 +4,14 @@ import numpy as np
 import joblib
 from tensorflow.keras.models import load_model
 import os
+from PIL import Image 
+
+# Show banner at the top
+banner_image = Image.open("banner.png")  # Replace with your saved file name
+st.image(banner_image, use_column_width=True)
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
 
 # Load models and encoders
 emotion_model = load_model("emotion_model.h5")
@@ -50,40 +58,3 @@ if uploaded_file is not None:
 
         except Exception as e:
             st.error("⚠️ Error during prediction: " + str(e))
-
-
-import base64
-
-# Convert local image to Base64 string
-def get_base64(file_path):
-    with open(file_path, "rb") as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
-
-img_base64 = get_base64("emoji.png")
-
-# Inject CSS with background image
-st.markdown(
-    f"""
-    <style>
-    .stApp {{
-        background-image: url("data:image/png;base64,{img_base64}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-    }}
-    .stApp::before {{
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(255, 255, 255, 0.85);  /* adjust for transparency */
-        z-index: -1;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
