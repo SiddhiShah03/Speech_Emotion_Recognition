@@ -9,38 +9,6 @@ from PIL import Image
 # Enable wide layout
 st.set_page_config(layout="wide")
 
-# Custom CSS for image + layout
-st.markdown("""
-    <style>
-    .reportview-container .main .block-container {
-        padding-top: 0rem;
-        padding-right: 2rem;
-        padding-left: 2rem;
-        padding-bottom: 0rem;
-        max-width: 100%;
-    }
-    img.banner {
-        border-radius: 10px;
-        width: 100%;
-        max-width: 600px;
-    }
-    .title-box {
-        padding-left: 30px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    .title-box h1 {
-        font-size: 2.5rem;
-        margin-bottom: 0.3rem;
-    }
-    .title-box p {
-        font-size: 1.1rem;
-        color: #555;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
 # Show banner at the top
 banner_image = Image.open("banner.png")  
 st.image(banner_image, use_container_width=True)
