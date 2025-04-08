@@ -6,8 +6,8 @@ from tensorflow.keras.models import load_model
 import os
 
 # Load models and encoders
-emotion_model = joblib.load("emotion_model.pkl")
-gender_model = joblib.load("gender_model.pkl")
+emotion_model = load_model("emotion_model.pkl")
+gender_model = load_model("gender_model.pkl")
 le_emotion = joblib.load("le_emotion.pkl")
 le_gender = joblib.load("le_gender.pkl")
 
@@ -31,18 +31,22 @@ uploaded_file = st.file_uploader("Upload Audio File", type=["wav", "mp3"])
 if uploaded_file is not None:
     with open("temp.wav", "wb") as f:
         f.write(uploaded_file.read())
-    
+
     st.audio(uploaded_file, format='audio/wav')
     
-    # Extract and predict
-    features = extract_features("temp.wav")
-    features = np.expand_dims(features, axis=0)
-    
-    emotion_pred = emotion_model.predict(features)
-    gender_pred = gender_model.predict(features)
-    
-    predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
-    predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
-    
-    st.success(f"**Emotion:** {predicted_emotion.capitalize()}")
-    st.success(f"**Gender:** {predicted_gender.capitalize()}")
+    if st.button("Predict"):
+        try:
+            features = extract_features("temp.wav")
+            features = np.expand_dims(features, axis=0)
+
+            emotion_pred = emotion_model.predict(features)
+            gender_pred = gender_model.predict(features)
+
+            predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
+            predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
+
+            st.success(f"**Emotion:** {predicted_emotion.capitalize()}")
+            st.success(f"**Gender:** {predicted_gender.capitalize()}")
+
+        except Exception as e:
+            st.error("⚠️ Error during prediction: " + str(e))
