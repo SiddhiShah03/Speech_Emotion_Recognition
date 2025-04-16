@@ -117,10 +117,22 @@ if uploaded_file is not None:
 st.markdown("---")
 st.markdown("### 🎤 Record Audio")
 
-client_settings = ClientSettings(
-    media_stream_constraints={"audio": True, "video": False},
-    rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
-)
+# Streamlit UI
+st.title("🎙️ Live Speech Emotion & Gender Recognition")
+st.markdown("Click **Start** to record audio and predict **emotion** and **gender**.")
+
+# Initialize audio buffer
+audio_buffer = []
+
+# Define a custom audio processor
+class AudioProcessor:
+    def __init__(self):
+        self.audio_data = []
+
+    def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
+        audio_np = frame.to_ndarray()
+        self.audio_data.extend(audio_np.flatten().tolist())
+        return frame
 
 ctx = webrtc_streamer(
     key="recording",
