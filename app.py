@@ -45,7 +45,8 @@ emotion_emojis = {
 gender_emojis = {
     "male": "👨",
     "female": "👩"
-    
+}
+
 # Streamlit UI
 #st.title("🎙️ Speech Emotion & Gender Recognition")
 #st.markdown("Upload an audio file (.wav or .mp3) and the model will predict the speaker's **emotion** and **gender**.")
