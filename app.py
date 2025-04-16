@@ -144,27 +144,31 @@ ctx = webrtc_streamer(
 )
 
 if ctx.state.playing:
+    st.info("Recording... Speak now!")
+
     if "processor" not in ctx.session_state:
         ctx.session_state.processor = AudioProcessor()
 
-    ctx.audio_receiver._processor = ctx.session_state.processor
-
-    st.info("Recording... Speak now!")
+    if ctx.audio_receiver:
+        ctx.audio_receiver._processor = ctx.session_state.processor
 
     if st.button("Predict"):
         try:
             raw_audio = np.array(ctx.session_state.processor.audio_data).astype(np.float32)
-            sample_rate = 48000  # streamlit-webrtc defaults to 48kHz
-            features = extract_features_from_audio_array(raw_audio, sample_rate)
-            features = np.expand_dims(features, axis=0)
+            if len(raw_audio) == 0:
+                st.warning("Please speak before hitting Predict.")
+            else:
+                sample_rate = 48000  # streamlit-webrtc default
+                features = extract_features_from_audio_array(raw_audio, sample_rate)
+                features = np.expand_dims(features, axis=0)
 
-            emotion_pred = emotion_model.predict(features)
-            gender_pred = gender_model.predict(features)
+                emotion_pred = emotion_model.predict(features)
+                gender_pred = gender_model.predict(features)
 
-            predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
-            predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
+                predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
+                predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
 
-            st.success(f"**Emotion:** {predicted_emotion.capitalize()} {emotion_emoji.get(predicted_emotion.lower(), '')}")
-            st.success(f"**Gender:** {predicted_gender.capitalize()} {gender_emoji.get(predicted_gender.lower(), '')}")
+                st.success(f"**Emotion:** {predicted_emotion.capitalize()} {emotion_emoji.get(predicted_emotion.lower(), '')}")
+                st.success(f"**Gender:** {predicted_gender.capitalize()} {gender_emoji.get(predicted_gender.lower(), '')}")
         except Exception as e:
             st.error("Prediction error: " + str(e))
