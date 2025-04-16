@@ -38,18 +38,7 @@ def extract_features(file_path, max_pad_len=174):
 st.markdown("<h1 style='text-align: center; color: #4CAF50;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
 
-#uploaded_file = st.file_uploader("Upload Audio File", type=["wav", "mp3"])
-st.markdown("""
-    <style>
-        .stFileUploader { display: none; }
-    </style>
-    <div style="text-align: center;">
-        <h3>Click below to upload an audio file</h3>
-        <button style="font-size: 18px; padding: 10px 20px; cursor: pointer; border: 2px solid #4CAF50; background-color: #fff; color: #4CAF50;">
-            Upload Audio
-        </button>
-    </div>
-""", unsafe_allow_html=True)
+uploaded_file = st.file_uploader("Upload Audio File", type=["wav", "mp3"])
 
 if uploaded_file is not None:
     with open("temp.wav", "wb") as f:
@@ -58,18 +47,29 @@ if uploaded_file is not None:
     st.audio(uploaded_file, format='audio/wav')
     
     if st.button("Predict"):
-        try:
-            features = extract_features("temp.wav")
-            features = np.expand_dims(features, axis=0)
+        with st.spinner('Predicting emotion and gender...'):
+            try:
+                features = extract_features("temp.wav")
+                features = np.expand_dims(features, axis=0)
 
-            emotion_pred = emotion_model.predict(features)
-            gender_pred = gender_model.predict(features)
+                emotion_pred = emotion_model.predict(features)
+                gender_pred = gender_model.predict(features)
 
-            predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
-            predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
+                predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
+                predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
 
-            st.success(f"**Emotion:** {predicted_emotion.capitalize()}")
-            st.success(f"**Gender:** {predicted_gender.capitalize()}")
+                st.markdown(f"""
+                    <h2 style='color: #4CAF50; text-align: center;'>Prediction Results</h2>
+                    <div style='text-align: center;'>
+                        <div style="font-size: 22px; color: #333;">
+                            <p><b>Emotion:</b> <span style="color: #ff5722;">{predicted_emotion.capitalize()}</span></p>
+                            <p><b>Gender:</b> <span style="color: #2196F3;">{predicted_gender.capitalize()}</span></p>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                #st.success(f"**Emotion:** {predicted_emotion.capitalize()}")
+                #st.success(f"**Gender:** {predicted_gender.capitalize()}")
 
-        except Exception as e:
-            st.error("⚠️ Error during prediction: " + str(e))
+            except Exception as e:
+                st.error("⚠️ Error during prediction: " + str(e))
