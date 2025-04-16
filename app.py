@@ -81,7 +81,6 @@ webrtc_streamer(
     key="live-audio",
     mode=WebRtcMode.SENDRECV,
     audio_receiver_size=256,
-    client_settings={"mediaStreamConstraints": {"audio": True, "video": False}},
     rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
     audio_processor_factory=AudioProcessor,
 )
