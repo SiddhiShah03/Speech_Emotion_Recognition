@@ -35,10 +35,21 @@ def extract_features(file_path, max_pad_len=174):
 #st.title("🎙️ Speech Emotion & Gender Recognition")
 #st.markdown("Upload an audio file (.wav or .mp3) and the model will predict the speaker's **emotion** and **gender**.")
 # Layout container with image and title
-st.markdown("<h1 style='text-align: center;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #4CAF50;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader("Upload Audio File", type=["wav", "mp3"])
+#uploaded_file = st.file_uploader("Upload Audio File", type=["wav", "mp3"])
+st.markdown("""
+    <style>
+        .stFileUploader { display: none; }
+    </style>
+    <div style="text-align: center;">
+        <h3>Click below to upload an audio file</h3>
+        <button style="font-size: 18px; padding: 10px 20px; cursor: pointer; border: 2px solid #4CAF50; background-color: #fff; color: #4CAF50;">
+            Upload Audio
+        </button>
+    </div>
+""", unsafe_allow_html=True)
 
 if uploaded_file is not None:
     with open("temp.wav", "wb") as f:
