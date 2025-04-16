@@ -57,12 +57,12 @@ if uploaded_file is not None:
                 
                 predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
                 predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
-
+                
                 # Emoji mappings
                 emotion_emojis = {
                     "happy": "😊",
-                    "angry": "😠",
-                    "sad": "😢",
+                    "angry": "😡",
+                    "sad": "🥺",
                     "neutral": "😐",
                     "fearful": "😨",
                     "disgust": "🤢",
