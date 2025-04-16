@@ -129,9 +129,9 @@ class AudioProcessor:
     def __init__(self):
         self.audio_data = []
 
-    def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
-        audio_np = frame.to_ndarray()
-        self.audio_data.extend(audio_np.flatten().tolist())
+    def recv(self, frame):
+        audio = frame.to_ndarray()
+        self.audio_data.extend(audio)
         return frame
 
 # Set up webrtc streamer
@@ -155,8 +155,10 @@ if ctx.state.playing:
     if st.button("Predict"):
         try:
             raw_audio = np.array(ctx.session_state.processor.audio_data).astype(np.float32)
-            if len(raw_audio) == 0:
-                st.warning("Please speak before hitting Predict.")
+
+            # ✅ CHECK: Ensure there's enough audio before prediction
+            if len(raw_audio) < 1000:
+                st.warning("❗ No audio captured. Please speak before clicking Predict.")
             else:
                 sample_rate = 48000  # streamlit-webrtc default
                 features = extract_features_from_audio_array(raw_audio, sample_rate)
@@ -171,4 +173,4 @@ if ctx.state.playing:
                 st.success(f"**Emotion:** {predicted_emotion.capitalize()} {emotion_emoji.get(predicted_emotion.lower(), '')}")
                 st.success(f"**Gender:** {predicted_gender.capitalize()} {gender_emoji.get(predicted_gender.lower(), '')}")
         except Exception as e:
-            st.error("Prediction error: " + str(e))
+            st.error(f"⚠️ Error during prediction: {str(e)}")
