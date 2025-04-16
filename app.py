@@ -134,54 +134,37 @@ class AudioProcessor:
         self.audio_data.extend(audio_np.flatten().tolist())
         return frame
 
+# Set up webrtc streamer
 ctx = webrtc_streamer(
-    key="recording",
-    mode=WebRtcMode.SENDRECV,
-    client_settings=client_settings,
-    audio_receiver_size=1024,
+    key="live-audio",
+    mode=WebRtcMode.RECVONLY,
     media_stream_constraints={"audio": True, "video": False},
+    audio_receiver_size=256,
+    async_processing=True,
 )
 
-if ctx.audio_receiver:
-    st.info("Recording... Speak into your mic.")
-    audio_data = []
-    try:
-        while True:
-            audio_frame = ctx.audio_receiver.get_frame(timeout=1)
-            audio = audio_frame.to_ndarray().flatten().astype(np.float32) / 32768.0
-            audio_data.extend(audio)
-    except:
-        pass
+if ctx.state.playing:
+    if "processor" not in ctx.session_state:
+        ctx.session_state.processor = AudioProcessor()
 
-    # Save to WAV file
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-        sf.write(f.name, np.array(audio_data), 48000)
-        recorded_path = f.name
-        st.success("✅ Recording saved!")
-        st.audio(recorded_path, format='audio/wav')
+    ctx.audio_receiver._processor = ctx.session_state.processor
 
-        if st.button("Predict from Recording"):
-            try:
-                features = extract_features(recorded_path)
-                features = np.expand_dims(features, axis=0)
+    st.info("Recording... Speak now!")
 
-                emotion_pred = emotion_model.predict(features)
-                gender_pred = gender_model.predict(features)
+    if st.button("Predict"):
+        try:
+            raw_audio = np.array(ctx.session_state.processor.audio_data).astype(np.float32)
+            sample_rate = 48000  # streamlit-webrtc defaults to 48kHz
+            features = extract_features_from_audio_array(raw_audio, sample_rate)
+            features = np.expand_dims(features, axis=0)
 
-                predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
-                predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
+            emotion_pred = emotion_model.predict(features)
+            gender_pred = gender_model.predict(features)
 
-                emotion_emoji = emotion_emojis.get(predicted_emotion.lower(), "")
-                gender_emoji = gender_emojis.get(predicted_gender.lower(), "")
+            predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
+            predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
 
-                st.markdown(f"""
-                    <h2 style='color: #8B4513; text-align: center;'>Prediction Results</h2>
-                    <div style='text-align: center;'>
-                        <div style="font-size: 22px; color: #6F4F37;">
-                            <p><b>Emotion:</b> <span style="color: #CD853F;">{predicted_emotion.capitalize()} {emotion_emoji}</span></p>
-                            <p><b>Gender:</b> <span style="color: #8B4513;">{predicted_gender.capitalize()} {gender_emoji}</span></p>
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
-            except Exception as e:
-                st.error("⚠️ Error during prediction: " + str(e))
+            st.success(f"**Emotion:** {predicted_emotion.capitalize()} {emotion_emoji.get(predicted_emotion.lower(), '')}")
+            st.success(f"**Gender:** {predicted_gender.capitalize()} {gender_emoji.get(predicted_gender.lower(), '')}")
+        except Exception as e:
+            st.error("Prediction error: " + str(e))
