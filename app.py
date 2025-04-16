@@ -35,8 +35,8 @@ def extract_features(file_path, max_pad_len=174):
 #st.title("🎙️ Speech Emotion & Gender Recognition")
 #st.markdown("Upload an audio file (.wav or .mp3) and the model will predict the speaker's **emotion** and **gender**.")
 # Layout container with image and title
-st.markdown("<h1 style='text-align: center; color: #4CAF50;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #8B4513;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-size: 18px; color: #6F4F37;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader("Upload Audio File", type=["wav", "mp3"])
 
@@ -59,11 +59,11 @@ if uploaded_file is not None:
                 predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
 
                 st.markdown(f"""
-                    <h2 style='color: #4CAF50; text-align: center;'>Prediction Results</h2>
+                    <h2 style='color: #8B4513; text-align: center;'>Prediction Results</h2>  <!-- Dark brown -->
                     <div style='text-align: center;'>
-                        <div style="font-size: 22px; color: #333;">
-                            <p><b>Emotion:</b> <span style="color: #ff5722;">{predicted_emotion.capitalize()}</span></p>
-                            <p><b>Gender:</b> <span style="color: #2196F3;">{predicted_gender.capitalize()}</span></p>
+                        <div style="font-size: 22px; color: #6F4F37;">  <!-- Lighter brown -->
+                            <p><b>Emotion:</b> <span style="color: #CD853F;">{predicted_emotion.capitalize()}</span></p>  <!-- A shade of brown -->
+                            <p><b>Gender:</b> <span style="color: #8B4513;">{predicted_gender.capitalize()}</span></p>  <!-- Brown -->
                         </div>
                     </div>
                 """, unsafe_allow_html=True)
