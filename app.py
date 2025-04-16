@@ -5,6 +5,8 @@ import joblib
 from tensorflow.keras.models import load_model
 import os
 from PIL import Image 
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, ClientSettings
+import av
 
 # Enable wide layout
 #st.set_page_config(layout="wide")
@@ -19,6 +21,21 @@ emotion_model = load_model("emotion_model.h5")
 gender_model = load_model("gender_model.h5")
 le_emotion = joblib.load("le_emotion.pkl")
 le_gender = joblib.load("le_gender.pkl")
+
+# Emojis
+emotion_emojis = {"happy": "😊",
+                    "angry": "😡",
+                    "sad": "🥺",
+                    "neutral": "😐",
+                    "fearful": "😨",
+                    "disgust": "🤢",
+                    "surprised": "😲",
+                    "calm": "😌"
+                }
+
+gender_emojis = {"male": "👨",
+                "female": "👩"
+                }
 
 # Feature extractor
 def extract_features(file_path, max_pad_len=174):
@@ -57,24 +74,7 @@ if uploaded_file is not None:
                 
                 predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
                 predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
-                
-                # Emoji mappings
-                emotion_emojis = {
-                    "happy": "😊",
-                    "angry": "😡",
-                    "sad": "🥺",
-                    "neutral": "😐",
-                    "fearful": "😨",
-                    "disgust": "🤢",
-                    "surprised": "😲",
-                    "calm": "😌"
-                }
-
-                gender_emojis = {
-                    "male": "👨",
-                    "female": "👩"
-                }
-
+            
                 # Get emojis
                 emotion_emoji = emotion_emojis.get(predicted_emotion.lower(), "")
                 gender_emoji = gender_emojis.get(predicted_gender.lower(), "")
@@ -92,5 +92,67 @@ if uploaded_file is not None:
                 #st.success(f"**Emotion:** {predicted_emotion.capitalize()}")
                 #st.success(f"**Gender:** {predicted_gender.capitalize()}")
 
+            except Exception as e:
+                st.error("⚠️ Error during prediction: " + str(e))
+
+##Recording section 
+
+st.markdown("---")
+st.markdown("### 🎤 Record Audio")
+
+client_settings = ClientSettings(
+    media_stream_constraints={"audio": True, "video": False},
+    rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+)
+
+ctx = webrtc_streamer(
+    key="recording",
+    mode=WebRtcMode.SENDRECV,
+    client_settings=client_settings,
+    audio_receiver_size=1024,
+    media_stream_constraints={"audio": True, "video": False},
+)
+
+if ctx.audio_receiver:
+    st.info("Recording... Speak into your mic.")
+    audio_data = []
+    try:
+        while True:
+            audio_frame = ctx.audio_receiver.get_frame(timeout=1)
+            audio = audio_frame.to_ndarray().flatten().astype(np.float32) / 32768.0
+            audio_data.extend(audio)
+    except:
+        pass
+
+    # Save to WAV file
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+        sf.write(f.name, np.array(audio_data), 48000)
+        recorded_path = f.name
+        st.success("✅ Recording saved!")
+        st.audio(recorded_path, format='audio/wav')
+
+        if st.button("Predict from Recording"):
+            try:
+                features = extract_features(recorded_path)
+                features = np.expand_dims(features, axis=0)
+
+                emotion_pred = emotion_model.predict(features)
+                gender_pred = gender_model.predict(features)
+
+                predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
+                predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
+
+                emotion_emoji = emotion_emojis.get(predicted_emotion.lower(), "")
+                gender_emoji = gender_emojis.get(predicted_gender.lower(), "")
+
+                st.markdown(f"""
+                    <h2 style='color: #8B4513; text-align: center;'>Prediction Results</h2>
+                    <div style='text-align: center;'>
+                        <div style="font-size: 22px; color: #6F4F37;">
+                            <p><b>Emotion:</b> <span style="color: #CD853F;">{predicted_emotion.capitalize()} {emotion_emoji}</span></p>
+                            <p><b>Gender:</b> <span style="color: #8B4513;">{predicted_gender.capitalize()} {gender_emoji}</span></p>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
             except Exception as e:
                 st.error("⚠️ Error during prediction: " + str(e))
