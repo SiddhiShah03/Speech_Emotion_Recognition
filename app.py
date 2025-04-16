@@ -74,7 +74,9 @@ class AudioProcessor:
 
     def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
         audio = frame.to_ndarray().flatten()
-        st.session_state.audio_buffer.extend(audio.tolist())
+        # Make sure the audio_buffer exists and is not None
+        if "audio_buffer" in st.session_state:
+            st.session_state.audio_buffer.extend(audio.tolist())
         return frame
 
 webrtc_streamer(
@@ -111,3 +113,4 @@ if st.button("Predict from Recording"):
 
         # Clear buffer after prediction
         st.session_state.audio_buffer = []
+        
