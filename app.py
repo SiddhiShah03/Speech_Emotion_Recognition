@@ -82,9 +82,14 @@ webrtc_streamer(
     mode=WebRtcMode.SENDRECV,
     audio_receiver_size=256,
     rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+    media_stream_constraints={"audio": True, "video": False},
     audio_processor_factory=AudioProcessor,
 )
 
+# Check if the recording device is available
+if len(st.session_state.audio_buffer) == 0:
+    st.warning("⚠️ No audio device detected or the device is not connected. Please check your microphone settings.")
+    
 if st.button("Predict from Recording"):
     if len(st.session_state.audio_buffer) < 10000:
         st.warning("⚠️ Not enough audio recorded. Please record more.")
