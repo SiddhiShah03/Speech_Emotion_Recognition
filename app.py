@@ -1,63 +1,35 @@
 import streamlit as st
-import librosa
 import numpy as np
-import joblib
-from tensorflow.keras.models import load_model
-import os
-from PIL import Image 
+import librosa
+import tensorflow as tf
+import pickle
 from streamlit_webrtc import webrtc_streamer, WebRtcMode
 import av
 
-# Define the configuration dictionaries
-rtc_configuration = {
-    "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
-}
-media_stream_constraints = {
-    "audio": True,
-    "video": False
-}
-
-# Use the configurations directly in webrtc_streamer
-webrtc_streamer(
-    key="audio",
-    mode=WebRtcMode.SENDRECV,
-    rtc_configuration=rtc_configuration,
-    media_stream_constraints=media_stream_constraints
-)
-
-# Enable wide layout
-#st.set_page_config(layout="wide")
-
-# Show banner at the top
-banner_image = Image.open("banner.png")  
-st.image(banner_image, use_container_width=True)
-st.markdown("<br>", unsafe_allow_html=True)
+st.set_page_config(page_title="Speech Emotion and Gender Recognition", layout="wide")
 
 # Load models and encoders
-emotion_model = load_model("emotion_model.h5")
-gender_model = load_model("gender_model.h5")
-le_emotion = joblib.load("le_emotion.pkl")
-le_gender = joblib.load("le_gender.pkl")
+emotion_model = tf.keras.models.load_model("emotion_model.h5")
+gender_model = tf.keras.models.load_model("gender_model.h5")
 
-# Emojis
-emotion_emojis = {"happy": "😊",
-                    "angry": "😡",
-                    "sad": "🥺",
-                    "neutral": "😐",
-                    "fearful": "😨",
-                    "disgust": "🤢",
-                    "surprised": "😲",
-                    "calm": "😌"
-                }
+with open("le_emotion.pkl", "rb") as f:
+    le_emotion = pickle.load(f)
 
-gender_emojis = {"male": "👨",
-                "female": "👩"
-                }
+with open("le_gender.pkl", "rb") as f:
+    le_gender = pickle.load(f)
 
-# Feature extractor
-def extract_features(file_path, max_pad_len=174):
-    audio, sample_rate = librosa.load(file_path, res_type='kaiser_fast')
-    mfccs = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
+# Emojis for fun!
+emotion_emojis = {
+    "neutral": "😐", "calm": "😌", "happy": "😄", "sad": "😢",
+    "angry": "😠", "fearful": "😱", "disgust": "🤢", "surprised": "😲"
+}
+gender_emojis = {
+    "male": "👨", "female": "👩"
+}
+
+# Audio feature extractor
+def extract_features_from_audio_array(audio_array, sample_rate, max_pad_len=174):
+    mfccs = librosa.feature.mfcc(y=audio_array, sr=sample_rate, n_mfcc=40)
     pad_width = max_pad_len - mfccs.shape[1]
     if pad_width > 0:
         mfccs = np.pad(mfccs, pad_width=((0, 0), (0, pad_width)), mode='constant')
@@ -65,102 +37,88 @@ def extract_features(file_path, max_pad_len=174):
         mfccs = mfccs[:, :max_pad_len]
     return mfccs
 
-# Streamlit UI
-#st.title("🎙️ Speech Emotion & Gender Recognition")
-#st.markdown("Upload an audio file (.wav or .mp3) and the model will predict the speaker's **emotion** and **gender**.")
-# Layout container with image and title
-st.markdown("<h1 style='text-align: center; color: #8B4513;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; font-size: 18px; color: #6F4F37;'>Upload an audio file (.wav or .mp3) and the model will predict the speaker's <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
+def extract_features(file_path):
+    audio, sample_rate = librosa.load(file_path, res_type='kaiser_fast')
+    return extract_features_from_audio_array(audio, sample_rate)
 
-uploaded_file = st.file_uploader("Upload Audio File", type=["wav", "mp3"])
+# UI Design
+st.markdown("""
+    <h1 style='text-align: center; color: #4B0082;'>🎙️ Speech Emotion and Gender Recognition</h1>
+    <p style='text-align: center;'>Upload or record your voice to detect your emotion and gender</p>
+""", unsafe_allow_html=True)
+
+st.image("banner.png", use_column_width=True)
+
+# Upload block
+st.header("🔼 Upload a WAV Audio File")
+uploaded_file = st.file_uploader("Choose a file...", type=["wav"])
 
 if uploaded_file is not None:
+    st.audio(uploaded_file, format="audio/wav")
     with open("temp.wav", "wb") as f:
-        f.write(uploaded_file.read())
+        f.write(uploaded_file.getbuffer())
+    features = extract_features("temp.wav")
+    features = np.expand_dims(features, axis=0)
 
-    st.audio(uploaded_file, format='audio/wav')
-    
-    if st.button("Predict"):
-        with st.spinner('Predicting emotion and gender...'):
-            try:
-                features = extract_features("temp.wav")
-                features = np.expand_dims(features, axis=0)
-                
-                emotion_pred = emotion_model.predict(features)
-                gender_pred = gender_model.predict(features)
-                
-                predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
-                predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
-            
-                # Get emojis
-                emotion_emoji = emotion_emojis.get(predicted_emotion.lower(), "")
-                gender_emoji = gender_emojis.get(predicted_gender.lower(), "")
-                
-                st.markdown(f"""
-                    <h2 style='color: #8B4513; text-align: center;'>Prediction Results</h2>  <!-- Dark brown -->
-                    <div style='text-align: center;'>
-                        <div style="font-size: 22px; color: #6F4F37;">  <!-- Lighter brown -->
-                            <p><b>Emotion:</b> <span style="color: #CD853F;">{predicted_emotion.capitalize()}{emotion_emoji}</span></p>  <!-- A shade of brown -->
-                            <p><b>Gender:</b> <span style="color: #8B4513;">{predicted_gender.capitalize()}{gender_emoji}</span></p>  <!-- Brown -->
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
-                
-                #st.success(f"**Emotion:** {predicted_emotion.capitalize()}")
-                #st.success(f"**Gender:** {predicted_gender.capitalize()}")
+    emotion_pred = emotion_model.predict(features)
+    gender_pred = gender_model.predict(features)
 
-            except Exception as e:
-                st.error("⚠️ Error during prediction: " + str(e))
+    predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
+    predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
 
-##Recording section 
+    emotion_emoji = emotion_emojis.get(predicted_emotion.lower(), "")
+    gender_emoji = gender_emojis.get(predicted_gender.lower(), "")
 
-st.markdown("---")
-st.markdown("### 🎤 Record Audio")
+    st.markdown(f"""
+        <h2 style='color: #8B4513; text-align: center;'>Prediction Results</h2>
+        <div style='text-align: center;'>
+            <div style="font-size: 22px; color: #6F4F37;">
+                <p><b>Emotion:</b> <span style="color: #CD853F;">{predicted_emotion.capitalize()} {emotion_emoji}</span></p>
+                <p><b>Gender:</b> <span style="color: #8B4513;">{predicted_gender.capitalize()} {gender_emoji}</span></p>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
-# Streamlit UI
-st.title("🎙️ Live Speech Emotion & Gender Recognition")
-st.markdown("Click **Start** to record audio and predict **emotion** and **gender**.")
+# --- 🎤 Live Audio Recording ---
+st.header("🎤 Or Record Your Voice")
 
-# Initialize audio buffer
-audio_buffer = []
+rtc_configuration = {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+media_stream_constraints = {"audio": True, "video": False}
 
-# Define a custom audio processor
 class AudioProcessor:
     def __init__(self):
         self.audio_data = []
 
-    def recv(self, frame):
+    def recv(self, frame: av.AudioFrame):
         audio = frame.to_ndarray()
-        self.audio_data.extend(audio)
+        self.audio_data.extend(audio.flatten())
         return frame
 
-# Set up webrtc streamer
 ctx = webrtc_streamer(
     key="live-audio",
     mode=WebRtcMode.RECVONLY,
-    media_stream_constraints={"audio": True, "video": False},
-    audio_receiver_size=256,
+    rtc_configuration=rtc_configuration,
+    media_stream_constraints=media_stream_constraints,
     async_processing=True,
 )
 
 if ctx.state.playing:
     st.info("Recording... Speak now!")
 
-    if "processor" not in ctx.session_state:
-        ctx.session_state.processor = AudioProcessor()
+    if "audio_processor" not in ctx.session_state:
+        ctx.session_state.audio_processor = AudioProcessor()
 
     if ctx.audio_receiver:
-        ctx.audio_receiver._processor = ctx.session_state.processor
+        ctx.audio_receiver._processor = ctx.session_state.audio_processor
 
-    if st.button("Predict"):
+    if st.button("🔍 Predict from Recording"):
         try:
-            raw_audio = np.array(ctx.session_state.processor.audio_data).astype(np.float32)
+            raw_audio = np.array(ctx.session_state.audio_processor.audio_data).astype(np.float32)
 
-            # ✅ CHECK: Ensure there's enough audio before prediction
             if len(raw_audio) < 1000:
-                st.warning("❗ No audio captured. Please speak before clicking Predict.")
+                st.warning("❗ Not enough audio captured. Please speak more.")
             else:
-                sample_rate = 48000  # streamlit-webrtc default
+                sample_rate = 48000  # WebRTC sample rate
                 features = extract_features_from_audio_array(raw_audio, sample_rate)
                 features = np.expand_dims(features, axis=0)
 
@@ -170,7 +128,17 @@ if ctx.state.playing:
                 predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
                 predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
 
-                st.success(f"**Emotion:** {predicted_emotion.capitalize()} {emotion_emoji.get(predicted_emotion.lower(), '')}")
-                st.success(f"**Gender:** {predicted_gender.capitalize()} {gender_emoji.get(predicted_gender.lower(), '')}")
+                emotion_emoji = emotion_emojis.get(predicted_emotion.lower(), "")
+                gender_emoji = gender_emojis.get(predicted_gender.lower(), "")
+
+                st.markdown(f"""
+                    <h2 style='color: #8B4513; text-align: center;'>Live Prediction Results</h2>
+                    <div style='text-align: center;'>
+                        <div style="font-size: 22px; color: #6F4F37;">
+                            <p><b>Emotion:</b> <span style="color: #CD853F;">{predicted_emotion.capitalize()} {emotion_emoji}</span></p>
+                            <p><b>Gender:</b> <span style="color: #8B4513;">{predicted_gender.capitalize()} {gender_emoji}</span></p>
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
         except Exception as e:
             st.error(f"⚠️ Error during prediction: {str(e)}")
