@@ -5,6 +5,7 @@ import tensorflow as tf
 import pickle
 from streamlit_webrtc import webrtc_streamer, WebRtcMode
 import av
+from tensorflow.keras.models import load_model
 
 st.set_page_config(page_title="Speech Emotion and Gender Recognition", layout="wide")
 
@@ -23,7 +24,6 @@ gender_emojis = {
     "male": "👨", "female": "👩"
 }
 
-# Audio feature extractor
 def extract_features_from_audio_array(audio_array, sample_rate, max_pad_len=174):
     mfccs = librosa.feature.mfcc(y=audio_array, sr=sample_rate, n_mfcc=40)
     pad_width = max_pad_len - mfccs.shape[1]
@@ -32,7 +32,7 @@ def extract_features_from_audio_array(audio_array, sample_rate, max_pad_len=174)
     else:
         mfccs = mfccs[:, :max_pad_len]
     return mfccs
-
+    
 def extract_features(file_path):
     audio, sample_rate = librosa.load(file_path, res_type='kaiser_fast')
     return extract_features_from_audio_array(audio, sample_rate)
@@ -107,34 +107,26 @@ if ctx.state.playing:
     if ctx.audio_receiver:
         ctx.audio_receiver._processor = ctx.session_state.audio_processor
 
-    if st.button("🔍 Predict from Recording"):
-        try:
-            raw_audio = np.array(ctx.session_state.audio_processor.audio_data).astype(np.float32)
+    if st.button("Predict"):
+    try:
+        if "processor" not in ctx.session_state or not hasattr(ctx.session_state.processor, "audio_data"):
+            st.warning("⚠️ No audio processor found. Please speak into the microphone first.")
+        elif len(ctx.session_state.processor.audio_data) < 1000:
+            st.warning("❗ No audio captured. Please speak clearly before clicking Predict.")
+        else:
+            raw_audio = np.array(ctx.session_state.processor.audio_data).astype(np.float32)
+            sample_rate = 48000  # streamlit-webrtc default
 
-            if len(raw_audio) < 1000:
-                st.warning("❗ Not enough audio captured. Please speak more.")
-            else:
-                sample_rate = 48000  # WebRTC sample rate
-                features = extract_features_from_audio_array(raw_audio, sample_rate)
-                features = np.expand_dims(features, axis=0)
+            features = extract_features_from_audio_array(raw_audio, sample_rate)
+            features = np.expand_dims(features, axis=0)
 
-                emotion_pred = emotion_model.predict(features)
-                gender_pred = gender_model.predict(features)
+            emotion_pred = emotion_model.predict(features)
+            gender_pred = gender_model.predict(features)
 
-                predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
-                predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
+            predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
+            predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
 
-                emotion_emoji = emotion_emojis.get(predicted_emotion.lower(), "")
-                gender_emoji = gender_emojis.get(predicted_gender.lower(), "")
-
-                st.markdown(f"""
-                    <h2 style='color: #8B4513; text-align: center;'>Live Prediction Results</h2>
-                    <div style='text-align: center;'>
-                        <div style="font-size: 22px; color: #6F4F37;">
-                            <p><b>Emotion:</b> <span style="color: #CD853F;">{predicted_emotion.capitalize()} {emotion_emoji}</span></p>
-                            <p><b>Gender:</b> <span style="color: #8B4513;">{predicted_gender.capitalize()} {gender_emoji}</span></p>
-                        </div>
-                    </div>
-                """, unsafe_allow_html=True)
-        except Exception as e:
-            st.error(f"⚠️ Error during prediction: {str(e)}")
+            st.success(f"**Emotion:** {predicted_emotion.capitalize()} {emotion_emojis.get(predicted_emotion.lower(), '')}")
+            st.success(f"**Gender:** {predicted_gender.capitalize()} {gender_emojis.get(predicted_gender.lower(), '')}")
+    except Exception as e:
+        st.error(f"⚠️ Error during prediction: {str(e)}")
