@@ -30,22 +30,6 @@ def extract_features(file_path, max_pad_len=174):
     else:
         mfccs = mfccs[:, :max_pad_len]
     return mfccs
-# Emoji mappings
-emotion_emojis = {
-    "happy": "😊",
-    "angry": "😠",
-    "sad": "😢",
-    "neutral": "😐",
-    "fearful": "😨",
-    "disgust": "🤢",
-    "surprised": "😲",
-    "calm": "😌"
-}
-
-gender_emojis = {
-    "male": "👨",
-    "female": "👩"
-}
 
 # Streamlit UI
 #st.title("🎙️ Speech Emotion & Gender Recognition")
@@ -68,16 +52,33 @@ if uploaded_file is not None:
                 features = extract_features("temp.wav")
                 features = np.expand_dims(features, axis=0)
                 
+                emotion_pred = emotion_model.predict(features)
+                gender_pred = gender_model.predict(features)
+                
+                predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
+                predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
+
+                # Emoji mappings
+                emotion_emojis = {
+                    "happy": "😊",
+                    "angry": "😠",
+                    "sad": "😢",
+                    "neutral": "😐",
+                    "fearful": "😨",
+                    "disgust": "🤢",
+                    "surprised": "😲",
+                    "calm": "😌"
+                }
+
+                gender_emojis = {
+                    "male": "👨",
+                    "female": "👩"
+                }
+
                 # Get emojis
                 emotion_emoji = emotion_emojis.get(predicted_emotion.lower(), "")
                 gender_emoji = gender_emojis.get(predicted_gender.lower(), "")
                 
-                emotion_pred = emotion_model.predict(features)
-                gender_pred = gender_model.predict(features)
-
-                predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
-                predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
-
                 st.markdown(f"""
                     <h2 style='color: #8B4513; text-align: center;'>Prediction Results</h2>  <!-- Dark brown -->
                     <div style='text-align: center;'>
