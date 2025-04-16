@@ -9,14 +9,10 @@ import av
 st.set_page_config(page_title="Speech Emotion and Gender Recognition", layout="wide")
 
 # Load models and encoders
-emotion_model = tf.keras.models.load_model("emotion_model.h5")
-gender_model = tf.keras.models.load_model("gender_model.h5")
-
-with open("le_emotion.pkl", "rb") as f:
-    le_emotion = pickle.load(f)
-
-with open("le_gender.pkl", "rb") as f:
-    le_gender = pickle.load(f)
+emotion_model = load_model("emotion_model.h5")
+gender_model = load_model("gender_model.h5")
+le_emotion = joblib.load("le_emotion.pkl")
+le_gender = joblib.load("le_gender.pkl")
 
 # Emojis for fun!
 emotion_emojis = {
@@ -47,11 +43,11 @@ st.markdown("""
     <p style='text-align: center;'>Upload or record your voice to detect your emotion and gender</p>
 """, unsafe_allow_html=True)
 
-st.image("banner.png", use_column_width=True)
+st.image("banner.png", use_container_width=True)
 
 # Upload block
 st.header("🔼 Upload a WAV Audio File")
-uploaded_file = st.file_uploader("Choose a file...", type=["wav"])
+uploaded_file = st.file_uploader("Choose a file...", type=["wav","mp3"])
 
 if uploaded_file is not None:
     st.audio(uploaded_file, format="audio/wav")
