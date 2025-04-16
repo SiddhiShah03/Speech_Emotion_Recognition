@@ -32,10 +32,9 @@ def extract_features_from_array(audio, sr, max_pad_len=174):
         mfccs = mfccs[:, :max_pad_len]
     return mfccs
 
-# Banner
-if os.path.exists("banner.png"):
-    banner_image = Image.open("banner.png")
-    st.image(banner_image, use_container_width=True)
+banner_image = Image.open("banner.png")  
+st.image(banner_image, use_container_width=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
 st.markdown("<h1 style='text-align: center; color: #8B4513;'>🎙️ Speech Emotion & Gender Recognition</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; font-size: 18px; color: #6F4F37;'>Upload or record audio and predict <b>emotion</b> and <b>gender</b>.</p>", unsafe_allow_html=True)
