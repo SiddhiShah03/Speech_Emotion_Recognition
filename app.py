@@ -30,7 +30,22 @@ def extract_features(file_path, max_pad_len=174):
     else:
         mfccs = mfccs[:, :max_pad_len]
     return mfccs
+# Emoji mappings
+emotion_emojis = {
+    "happy": "😊",
+    "angry": "😠",
+    "sad": "😢",
+    "neutral": "😐",
+    "fearful": "😨",
+    "disgust": "🤢",
+    "surprised": "😲",
+    "calm": "😌"
+}
 
+gender_emojis = {
+    "male": "👨",
+    "female": "👩"
+    
 # Streamlit UI
 #st.title("🎙️ Speech Emotion & Gender Recognition")
 #st.markdown("Upload an audio file (.wav or .mp3) and the model will predict the speaker's **emotion** and **gender**.")
@@ -51,7 +66,11 @@ if uploaded_file is not None:
             try:
                 features = extract_features("temp.wav")
                 features = np.expand_dims(features, axis=0)
-
+                
+                # Get emojis
+                emotion_emoji = emotion_emojis.get(predicted_emotion.lower(), "")
+                gender_emoji = gender_emojis.get(predicted_gender.lower(), "")
+                
                 emotion_pred = emotion_model.predict(features)
                 gender_pred = gender_model.predict(features)
 
@@ -62,8 +81,8 @@ if uploaded_file is not None:
                     <h2 style='color: #8B4513; text-align: center;'>Prediction Results</h2>  <!-- Dark brown -->
                     <div style='text-align: center;'>
                         <div style="font-size: 22px; color: #6F4F37;">  <!-- Lighter brown -->
-                            <p><b>Emotion:</b> <span style="color: #CD853F;">{predicted_emotion.capitalize()}</span></p>  <!-- A shade of brown -->
-                            <p><b>Gender:</b> <span style="color: #8B4513;">{predicted_gender.capitalize()}</span></p>  <!-- Brown -->
+                            <p><b>Emotion:</b> <span style="color: #CD853F;">{predicted_emotion.capitalize()}{emotion_pred}</span></p>  <!-- A shade of brown -->
+                            <p><b>Gender:</b> <span style="color: #8B4513;">{predicted_gender.capitalize()}{gender_pred}</span></p>  <!-- Brown -->
                         </div>
                     </div>
                 """, unsafe_allow_html=True)
