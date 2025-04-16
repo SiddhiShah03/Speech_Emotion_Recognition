@@ -5,3 +5,5 @@ tensorflow
 scikit-learn
 soundfile
 resampy
+pillow
+streamlit-webrtc
