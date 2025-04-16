@@ -83,8 +83,8 @@ if uploaded_file is not None:
                     <h2 style='color: #8B4513; text-align: center;'>Prediction Results</h2>  <!-- Dark brown -->
                     <div style='text-align: center;'>
                         <div style="font-size: 22px; color: #6F4F37;">  <!-- Lighter brown -->
-                            <p><b>Emotion:</b> <span style="color: #CD853F;">{predicted_emotion.capitalize()}{emotion_pred}</span></p>  <!-- A shade of brown -->
-                            <p><b>Gender:</b> <span style="color: #8B4513;">{predicted_gender.capitalize()}{gender_pred}</span></p>  <!-- Brown -->
+                            <p><b>Emotion:</b> <span style="color: #CD853F;">{predicted_emotion.capitalize()}{emotion_emoji}</span></p>  <!-- A shade of brown -->
+                            <p><b>Gender:</b> <span style="color: #8B4513;">{predicted_gender.capitalize()}{gender_emoji}</span></p>  <!-- Brown -->
                         </div>
                     </div>
                 """, unsafe_allow_html=True)
