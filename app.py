@@ -108,25 +108,25 @@ if ctx.state.playing:
         ctx.audio_receiver._processor = ctx.session_state.audio_processor
 
     if st.button("Predict"):
-    try:
-        if "processor" not in ctx.session_state or not hasattr(ctx.session_state.processor, "audio_data"):
-            st.warning("⚠️ No audio processor found. Please speak into the microphone first.")
-        elif len(ctx.session_state.processor.audio_data) < 1000:
-            st.warning("❗ No audio captured. Please speak clearly before clicking Predict.")
-        else:
-            raw_audio = np.array(ctx.session_state.processor.audio_data).astype(np.float32)
-            sample_rate = 48000  # streamlit-webrtc default
+        try:
+            if "processor" not in ctx.session_state or not hasattr(ctx.session_state.processor, "audio_data"):
+                st.warning("⚠️ No audio processor found. Please speak into the microphone first.")
+            elif len(ctx.session_state.processor.audio_data) < 1000:
+                st.warning("❗ No audio captured. Please speak clearly before clicking Predict.")
+            else:
+                raw_audio = np.array(ctx.session_state.processor.audio_data).astype(np.float32)
+                sample_rate = 48000  # streamlit-webrtc default
 
-            features = extract_features_from_audio_array(raw_audio, sample_rate)
-            features = np.expand_dims(features, axis=0)
+                features = extract_features_from_audio_array(raw_audio, sample_rate)
+                features = np.expand_dims(features, axis=0)
 
-            emotion_pred = emotion_model.predict(features)
-            gender_pred = gender_model.predict(features)
+                emotion_pred = emotion_model.predict(features)
+                gender_pred = gender_model.predict(features)
 
-            predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
-            predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
+                predicted_emotion = le_emotion.inverse_transform([np.argmax(emotion_pred)])[0]
+                predicted_gender = le_gender.inverse_transform([np.argmax(gender_pred)])[0]
 
-            st.success(f"**Emotion:** {predicted_emotion.capitalize()} {emotion_emojis.get(predicted_emotion.lower(), '')}")
-            st.success(f"**Gender:** {predicted_gender.capitalize()} {gender_emojis.get(predicted_gender.lower(), '')}")
-    except Exception as e:
-        st.error(f"⚠️ Error during prediction: {str(e)}")
+                st.success(f"**Emotion:** {predicted_emotion.capitalize()} {emotion_emojis.get(predicted_emotion.lower(), '')}")
+                st.success(f"**Gender:** {predicted_gender.capitalize()} {gender_emojis.get(predicted_gender.lower(), '')}")
+        except Exception as e:
+            st.error(f"⚠️ Error during prediction: {str(e)}")
