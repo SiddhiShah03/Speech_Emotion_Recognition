@@ -5,8 +5,25 @@ import joblib
 from tensorflow.keras.models import load_model
 import os
 from PIL import Image 
-from streamlit_webrtc import webrtc_streamer, WebRtcMode, ClientSettings
+from streamlit_webrtc import webrtc_streamer, WebRtcMode
 import av
+
+# Define the configuration dictionaries
+rtc_configuration = {
+    "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+}
+media_stream_constraints = {
+    "audio": True,
+    "video": False
+}
+
+# Use the configurations directly in webrtc_streamer
+webrtc_streamer(
+    key="audio",
+    mode=WebRtcMode.SENDRECV,
+    rtc_configuration=rtc_configuration,
+    media_stream_constraints=media_stream_constraints
+)
 
 # Enable wide layout
 #st.set_page_config(layout="wide")
