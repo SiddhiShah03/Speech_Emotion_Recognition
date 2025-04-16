@@ -6,6 +6,7 @@ import pickle
 from streamlit_webrtc import webrtc_streamer, WebRtcMode
 import av
 from tensorflow.keras.models import load_model
+import joblib
 
 st.set_page_config(page_title="Speech Emotion and Gender Recognition", layout="wide")
 
