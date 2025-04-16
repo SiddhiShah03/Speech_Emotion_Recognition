@@ -88,7 +88,7 @@ webrtc_streamer(
 
 # Check if the recording device is available
 if len(st.session_state.audio_buffer) == 0:
-    st.warning("⚠️ No audio device detected or the device is not connected. Please check your microphone settings.")
+    st.warning("⚠️ No audio recorded yet. Please record some audio first.")
     
 if st.button("Predict from Recording"):
     if len(st.session_state.audio_buffer) < 10000:
